@@ -10,3 +10,9 @@ Route::prefix('auth')->controller(AuthController::class)->group(function () {
     Route::post('refresh', 'refresh')->middleware('auth:api');
     Route::post('logout', 'logout')->middleware('auth:api');
 });
+
+Route::middleware('auth:api')->controller(UserController::class)->group(function () {
+    Route::get('users/me', 'me');
+    Route::put('users/me', 'update');
+    Route::patch('users/me/password', 'changePassword');
+});
