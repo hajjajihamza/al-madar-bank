@@ -3,8 +3,11 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Carbon\Carbon;
 use Database\Factories\UserFactory;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Tymon\JWTAuth\Contracts\JWTSubject;
@@ -37,6 +40,13 @@ class User extends Authenticatable implements JWTSubject
         'password',
         'remember_token',
     ];
+
+    /**
+     * The attributes that should be appended to the model.
+     *
+     * @var list<string>
+     */
+    protected $appends = ['age'];
 
     /**
      * Get the attributes that should be cast.
@@ -73,5 +83,32 @@ class User extends Authenticatable implements JWTSubject
         return [
             'role' => $this->is_admin ? 'admin' : 'user',
         ];
+    }
+
+    /**
+     * Get the accounts associated with the user.
+     */
+    public function accounts(): BelongsToMany
+    {
+        return $this->belongsToMany(Account::class, 'contracts')
+            ->withPivot('guardian_id', 'accepted_closure')
+            ->withTimestamps();
+    }
+
+    public function guardianAccounts(): BelongsToMany
+    {
+        return $this->belongsToMany(Account::class, 'contracts', 'guardian_id')
+            ->withPivot('user_id', 'accepted_closure')
+            ->withTimestamps();
+    }
+
+    /**
+     * Calculate user age.
+     */
+    protected function age(): Attribute
+    {
+        return Attribute::make(
+            get: fn() => Carbon::parse($this->date_of_birth)->age,
+        );
     }
 }

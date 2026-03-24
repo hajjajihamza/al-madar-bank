@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\AccountController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\UserController;
 use Illuminate\Support\Facades\Route;
@@ -15,4 +16,8 @@ Route::middleware('auth:api')->controller(UserController::class)->group(function
     Route::get('users/me', 'me');
     Route::put('users/me', 'update');
     Route::patch('users/me/password', 'changePassword');
+});
+
+Route::middleware('auth:api')->group(function () {
+    Route::apiResource('accounts', AccountController::class)->only(['index', 'store', 'show']);
 });
