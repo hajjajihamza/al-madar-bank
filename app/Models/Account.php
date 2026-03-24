@@ -7,6 +7,7 @@ use App\Enums\AccountType;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Account extends Model
 {
@@ -44,5 +45,15 @@ class Account extends Model
         return $this->belongsToMany(User::class, 'contracts', 'account_id', 'guardian_id')
             ->withPivot('user_id', 'accepted_closure')
             ->withTimestamps();
+    }
+
+    public function transactions(): HasMany
+    {
+        return $this->hasMany(Transaction::class);
+    }
+
+    public function transfers(): HasMany
+    {
+        return $this->hasMany(Transfer::class);
     }
 }
