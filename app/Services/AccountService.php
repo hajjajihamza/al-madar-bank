@@ -6,6 +6,7 @@ use App\Enums\AccountType;
 use App\Models\Account;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use App\Enums\AccountStatus;
 
 class AccountService
 {
@@ -62,6 +63,20 @@ class AccountService
         ]);
 
         $account->users()->syncWithoutDetaching(auth()->id());
+    }
+
+    public function demandeCloseAccount(Account $account): void
+    {
+        $account->users()->updateExistingPivot(auth()->id(), [
+            'accepted_closure' => true,
+        ]);
+    }
+
+    public function closeAccount(Account $account): void
+    {
+        $account->update([
+            'status' => AccountStatus::CLOSED->value,
+        ]);
     }
 
     /**

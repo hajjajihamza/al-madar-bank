@@ -9,6 +9,7 @@ use App\Http\Resources\AccountResource;
 use App\Models\Account;
 use App\Models\User;
 use App\Services\AccountService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 class AccountController extends Controller
@@ -62,7 +63,7 @@ class AccountController extends Controller
     /**
      * Add co-owners to the specified account.
      */
-    public function addCoOwner(Account $account, User $user)
+    public function addCoOwner(Account $account, User $user): JsonResponse
     {
         if (!$this->checkAuthorization($account)) {
             return response()->json(['message' => 'Unauthorized'], 403);
@@ -124,6 +125,20 @@ class AccountController extends Controller
 
         return response()->json([
             'message' => 'Minor account converted to courant successfully',
+            'account' => new AccountResource($account->load(['users'])),
+        ]);
+    }
+
+    public function demandeCloseAccount(Account $account)
+    {
+        if (!$this->checkAuthorization($account)) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $this->accountService->demandeCloseAccount($account);
+
+        return response()->json([
+            'message' => 'Account closure requested successfully',
             'account' => new AccountResource($account->load(['users'])),
         ]);
     }

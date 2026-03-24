@@ -23,4 +23,5 @@ Route::middleware('auth:api')->group(function () {
     Route::post('accounts/{account}/co-owners/{user}', [AccountController::class, 'addCoOwner']);
     Route::delete('accounts/{account}/co-owners/{user}', [AccountController::class, 'removeCoOwner']);
     Route::patch('accounts/{account}/convert-minor-to-courant', [AccountController::class, 'convertMinorAccountToCourant']);
+    Route::patch('accounts/{account}/demande-close', [AccountController::class, 'demandeCloseAccount']);
 });
