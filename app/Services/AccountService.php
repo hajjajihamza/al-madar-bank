@@ -11,9 +11,6 @@ class AccountService
 {
     /**
      * Create a new account and attach it to the user.
-     *
-     * @param array $data
-     * @return Account
      */
     public static function createAccount(array $data): Account
     {
@@ -28,21 +25,47 @@ class AccountService
                 ])
             );
 
-            $account->users()->syncWithoutDetaching(
-                auth()->id(), [
+            $account->users()->syncWithoutDetaching([
+                auth()->id() => [
                     'guardian_id' => $data['guardian_id'] ?? null,
                 ],
-            );
+            ]);
 
             return $account;
         });
     }
 
     /**
+     * Add co-owners to an account.
+     */
+    public function addCoOwner(Account $account, int $userId): void
+    {
+        $account->users()->syncWithoutDetaching($userId);
+    }
+
+    /**
+     * Remove co-owners from an account.
+     */
+    public function removeCoOwner(Account $account, int $userId): void
+    {
+        $account->users()->detach($userId);
+    }
+
+    public function convertMinorAccountToCourant(Account $account): void
+    {
+        $account->update([
+            'type' => AccountType::COURANT->value,
+        ]);
+
+        $account->guardians()->updateExistingPivot(auth()->id(), [
+            'guardian_id' => null,
+        ]);
+
+        $account->users()->syncWithoutDetaching(auth()->id());
+    }
+
+    /**
      * Get default configuration for account type.
-     *
-     * @param string $type
-     * @return array
      */
     protected static function getAccountConfig(string $type): array
     {
@@ -67,8 +90,6 @@ class AccountService
 
     /**
      * Generate a unique account number.
-     *
-     * @return string
      */
     protected static function generateAccountNumber(): string
     {

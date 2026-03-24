@@ -20,4 +20,7 @@ Route::middleware('auth:api')->controller(UserController::class)->group(function
 
 Route::middleware('auth:api')->group(function () {
     Route::apiResource('accounts', AccountController::class)->only(['index', 'store', 'show']);
+    Route::post('accounts/{account}/co-owners/{user}', [AccountController::class, 'addCoOwner']);
+    Route::delete('accounts/{account}/co-owners/{user}', [AccountController::class, 'removeCoOwner']);
+    Route::patch('accounts/{account}/convert-minor-to-courant', [AccountController::class, 'convertMinorAccountToCourant']);
 });
