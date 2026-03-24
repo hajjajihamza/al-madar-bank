@@ -25,3 +25,10 @@ Route::middleware('auth:api')->group(function () {
     Route::patch('accounts/{account}/convert-minor-to-courant', [AccountController::class, 'convertMinorAccountToCourant']);
     Route::patch('accounts/{account}/demande-close', [AccountController::class, 'demandeCloseAccount']);
 });
+
+Route::middleware(['auth:api', 'admin'])->prefix('admin')->group(function () {
+    Route::get('accounts', [\App\Http\Controllers\Api\AdminController::class, 'index']);
+    Route::patch('accounts/{account}/block', [\App\Http\Controllers\Api\AdminController::class, 'blockAccount']);
+    Route::patch('accounts/{account}/unblock', [\App\Http\Controllers\Api\AdminController::class, 'unblockAccount']);
+    Route::patch('accounts/{account}/close', [\App\Http\Controllers\Api\AdminController::class, 'closeAccount']);
+});
