@@ -1,0 +1,829 @@
+{
+  "info": {
+    "_postman_id": "61f44b5f-c765-4a40-8a68-94b943489e36",
+    "name": "al-madar-bank",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "52413757",
+    "_collection_link": "https://go.postman.co/collection/52413757-61f44b5f-c765-4a40-8a68-94b943489e36?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "registration",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"first_name\": \"hamza\",\r\n    \"last_name\": \"hajjaji\",\r\n    \"email\": \"hajjaji@gmail.com\",\r\n    \"password\": \"password\",\r\n    \"password_confirmation\": \"password\",\r\n    \"date_of_birth\": \"2004-06-12\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{url}}/auth/register",
+              "host": [
+                "{{url}}"
+              ],
+              "path": [
+                "auth",
+                "register"
+              ]
+            },
+            "description": "Registers a new user account.\n\n## Purpose\n\nCreate a new user in the system using basic profile details and a password. This endpoint is typically the first step before logging in.\n\n## Method & URL\n\n`POST {{url}}/auth/register`\n\n## Authentication\n\nNone (public endpoint).\n\n## Headers\n\n| Header | Value | Notes |  \n| --- | --- | --- | --- |  \n| `Accept` | `application/json` | Requests JSON responses |\n\n> If your API requires JSON request parsing, ensure you send `Content-Type: application/json` (some backends infer it automatically, but it’s commonly required). \n  \n\n## Request Body (JSON)\n\nSend a JSON object with the following fields:\n\n| Field | Type | Required | Constraints / Notes |\n| --- | --- | --- | --- |\n| `first_name` | string | Yes | Non-empty; typically 2–50 chars |\n| `last_name` | string | Yes | Non-empty; typically 2–50 chars |\n| `email` | string | Yes | Must be a valid email format; must be unique |\n| `password` | string | Yes | Minimum length enforced by backend (commonly 8+); avoid weak passwords |\n| `password_confirmation` | string | Yes | Must match `password` |\n| `date_of_birth` | string | Yes | Date string in `YYYY-MM-DD` format |\n\n### Example request payload\n\n``` json\n{\n  \"first_name\": \"hamza\",\n  \"last_name\": \"hajjaji\",\n  \"email\": \"hajjaji@gmail.com\",\n  \"password\": \"password\",\n  \"password_confirmation\": \"password\",\n  \"date_of_birth\": \"2004-06-12\"\n}\n\n ```\n\n## Expected Responses\n\n### `201 Created`\n\nUser registered successfully.\n\nExample shape:\n\n``` json\n{\n  \"message\": \"Registered successfully\",\n  \"data\": {\n    \"id\": 123,\n    \"first_name\": \"hamza\",\n    \"last_name\": \"hajjaji\",\n    \"email\": \"hajjaji@gmail.com\",\n    \"date_of_birth\": \"2004-06-12\",\n    \"created_at\": \"2026-03-16T12:34:56Z\"\n  }\n}\n\n ```\n\n### `422 Unprocessable Entity`\n\nValidation failed (missing/invalid fields).\n\nExample shape:\n\n``` json\n{\n  \"message\": \"The given data was invalid.\",\n  \"errors\": {\n    \"email\": [\"The email field must be a valid email address.\"],\n    \"password\": [\"The password field must be at least 8 characters.\"],\n    \"password_confirmation\": [\"The password confirmation does not match.\"]\n  }\n}\n\n ```"
+          },
+          "response": []
+        },
+        {
+          "name": "login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "let jsonData = pm.response.json();\r",
+                  "\r",
+                  "let token = null;\r",
+                  "\r",
+                  "if (jsonData.token) {\r",
+                  "    token = jsonData.token;\r",
+                  "}\r",
+                  "\r",
+                  "if(token) {\r",
+                  "    pm.environment.set(\"token\", token);\r",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"email\": \"hamza@gmail.com\",\r\n    \"password\": \"password\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{url}}/auth/login",
+              "host": [
+                "{{url}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "description": "### Login\nAuthenticates a user with email + password and returns an access token (when credentials are valid).\n\n**Method:** `POST`  \n**URL:** `{{url}}/auth/login`\n\n---\n\n### Required headers\n| Header | Value | Notes |\n|---|---|---|\n| `Accept` | `application/json` | Indicates the client expects a JSON response. |\n\n---\n\n### Request body (JSON)\n**Schema**\n```json\n{\n  \"email\": \"string\",\n  \"password\": \"string\"\n}\n```\n\n**Example**\n```json\n{\n  \"email\": \"hamza@gmail.com\",\n  \"password\": \"password\"\n}\n```\n\n---\n\n### Responses\n#### 200 OK (success)\nReturns a JSON response that includes a `token` field.\n\nExample shape:\n```json\n{\n  \"token\": \"<jwt-or-access-token>\"\n}\n```\n\n#### 401 Unauthorized (error)\nReturned when credentials are invalid or the user is not authorized.\n\nExample:\n```json\n{\n  \"error\": \"Unauthorized\"\n}\n```\n\n---\n\n### Postman behavior\nThis request has an existing post-response script that checks the response JSON for `token` and, when present, saves it into the active environment variable **`token`** (i.e., `pm.environment.set('token', token)`).\n"
+          },
+          "response": []
+        },
+        {
+          "name": "refresh",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "let jsonData = pm.response.json();\r",
+                  "\r",
+                  "let token = null;\r",
+                  "\r",
+                  "if (jsonData.token) {\r",
+                  "    token = jsonData.token;\r",
+                  "}\r",
+                  "\r",
+                  "if(token) {\r",
+                  "    pm.environment.set(\"token\", token);\r",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{url}}/auth/refresh",
+              "host": [
+                "{{url}}"
+              ],
+              "path": [
+                "auth",
+                "refresh"
+              ]
+            },
+            "description": "### Refresh Token\n\nRefreshes the current authentication token by calling the refresh endpoint.\n\n#### Endpoint\n\n`POST {{url}}/auth/refresh`\n\n#### Required variables\n\n- `{{url}}` — Base API URL (set in the active environment **al-madar-bank**).\n- `token` — Current access token stored as an environment variable.\n\n> Note: This request expects the token to be sent according to your API’s auth mechanism (for example, `Authorization: Bearer {{token}}` if configured at a parent folder/collection). This request itself is currently documented without changing its headers/auth settings.\n\n#### Expected response\n\nA JSON object containing a refreshed token.\n\nTypical shape:\n\n```json\n{\n  \"token\": \"<new_access_token>\"\n}\n```\n\n#### Post-response behavior\n\nThis request includes a post-response script that:\n\n1. Parses the JSON response (`pm.response.json()`)\n2. Reads `jsonData.token`\n3. If present, saves it into the active environment:\n\n```javascript\npm.environment.set(\"token\", token);\n```\n\nThis updates the `token` environment variable for subsequent requests.\n\n---\n\n### Examples\n\n**Example request**\n\n```http\nPOST {{url}}/auth/refresh\nAccept: application/json\n```\n\n**Example response**\n\n```http\nHTTP/1.1 200 OK\nContent-Type: application/json\n\n{\n  \"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\"\n}\n```"
+          },
+          "response": []
+        },
+        {
+          "name": "logout",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{url}}/auth/logout",
+              "host": [
+                "{{url}}"
+              ],
+              "path": [
+                "auth",
+                "logout"
+              ]
+            },
+            "description": "Logs out the currently authenticated user by invalidating the active session/token on the server.\n\n### Authentication\nThis endpoint requires an authenticated request.\n\n- Send the access token as a Bearer token.\n- The token value is stored in `{{token}}`.\n\nHeader format:\n```http\nAuthorization: Bearer {{token}}\n```\n\n### Required variables (environment: `al-madar-bank`)\n- `{{url}}` — Base API URL (e.g., `https://api.example.com`)\n- `{{token}}` — Current access token for the logged-in user\n\n### How to use\n1. Run **login** to obtain `{{token}}`.\n2. If `{{token}}` is expired, run **refresh** to update it.\n3. Send this **logout** request.\n\n### Expected responses\n- **200 OK** or **204 No Content** — Logout succeeded.\n- **401 Unauthorized** — Missing/invalid/expired token (authenticate again via **login** or update token via **refresh**)."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "User",
+      "item": [
+        {
+          "name": "profil",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{url}}/users/me",
+              "host": [
+                "{{url}}"
+              ],
+              "path": [
+                "users",
+                "me"
+              ]
+            },
+            "description": "Retrieves the profile of the currently authenticated user.\n\n### Endpoint\n\n`GET {{url}}/users/me`\n\n### Base URL\n\nThis request uses the environment variable `{{url}}` as the API base URL (for example: `https://api.your-domain.com`).\n\n### Authentication\n\nRequires a Bearer access token stored in the environment variable `{{token}}`.\n\nSend the token as:\n\n``` http\nAuthorization: Bearer {{token}}\n\n ```\n\n### Headers\n\n``` http\nAccept: application/json\n\n ```\n\n### Success response (200)\n\nReturns a `data` object containing the authenticated user.\n\nCommon fields:\n\n- `data.id` (number) — User ID\n    \n- `data.first_name` (string)\n    \n- `data.last_name` (string)\n    \n- `data.email` (string)\n    \n- `data.date_of_birth` (string, `YYYY-MM-DD`)\n    \n- `data.created_at` (string/datetime)\n    \n- `data.updated_at` (string/datetime)\n    \n\n### Common error codes\n\n- **401 Unauthorized** — Missing/invalid/expired token\n    \n- **403 Forbidden** — Authenticated but not allowed to access this resource\n    \n- **404 Not Found** — Route/resource not found\n    \n- **422 Unprocessable Entity** — Validation error (if applicable)\n    \n- **500 Internal Server Error** — Unexpected server error"
+          },
+          "response": []
+        },
+        {
+          "name": "update profil",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"first_name\": \"hamza\",\r\n    \"last_name\": \"hajjaji\",\r\n    \"email\": \"hajjaji@gmail.com\",\r\n    \"password\": \"password\",\r\n    \"password_confirmation\": \"password\",\r\n    \"date_of_birth\": \"2004-06-12\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{url}}/users/me",
+              "host": [
+                "{{url}}"
+              ],
+              "path": [
+                "users",
+                "me"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "password",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"current_password\": \"password\",\r\n    \"password\":\"12345678\",\r\n    \"password_confirmation\":\"12345678\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{url}}/users/me/password",
+              "host": [
+                "{{url}}"
+              ],
+              "path": [
+                "users",
+                "me",
+                "password"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Account",
+      "item": [
+        {
+          "name": "liste des compte",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{url}}/accounts/",
+              "host": [
+                "{{url}}"
+              ],
+              "path": [
+                "accounts",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "détail compte",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{url}}/accounts/:account",
+              "host": [
+                "{{url}}"
+              ],
+              "path": [
+                "accounts",
+                ":account"
+              ],
+              "variable": [
+                {
+                  "key": "account",
+                  "value": "9"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "créer compte",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"type\": \"MINEUR\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{url}}/accounts/",
+              "host": [
+                "{{url}}"
+              ],
+              "path": [
+                "accounts",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "ajouter co-titulaire",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{url}}/accounts/:account/co-owners/:user",
+              "host": [
+                "{{url}}"
+              ],
+              "path": [
+                "accounts",
+                ":account",
+                "co-owners",
+                ":user"
+              ],
+              "variable": [
+                {
+                  "key": "account",
+                  "value": "9"
+                },
+                {
+                  "key": "user",
+                  "value": "12"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "retirer co-titulaire",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{url}}/accounts/:account/co-owners/:user",
+              "host": [
+                "{{url}}"
+              ],
+              "path": [
+                "accounts",
+                ":account",
+                "co-owners",
+                ":user"
+              ],
+              "variable": [
+                {
+                  "key": "account",
+                  "value": "9"
+                },
+                {
+                  "key": "user",
+                  "value": "12"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "convertir MINEUR → COURANT",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{url}}/accounts/:account/convert-minor-to-courant",
+              "host": [
+                "{{url}}"
+              ],
+              "path": [
+                "accounts",
+                ":account",
+                "convert-minor-to-courant"
+              ],
+              "variable": [
+                {
+                  "key": "account",
+                  "value": "9"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "demande de clôture",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{url}}/accounts/:account/demande-close",
+              "host": [
+                "{{url}}"
+              ],
+              "path": [
+                "accounts",
+                ":account",
+                "demande-close"
+              ],
+              "variable": [
+                {
+                  "key": "account",
+                  "value": "9"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Admin",
+      "item": [
+        {
+          "name": "tous les comptes",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{url}}/admin/accounts",
+              "host": [
+                "{{url}}"
+              ],
+              "path": [
+                "admin",
+                "accounts"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "bloquer compte",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"blocked_reason\": \"\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{url}}/admin/accounts/:account/block",
+              "host": [
+                "{{url}}"
+              ],
+              "path": [
+                "admin",
+                "accounts",
+                ":account",
+                "block"
+              ],
+              "variable": [
+                {
+                  "key": "account",
+                  "value": "9"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "débloquer compte",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{url}}/admin/accounts/:account/unblock",
+              "host": [
+                "{{url}}"
+              ],
+              "path": [
+                "admin",
+                "accounts",
+                ":account",
+                "unblock"
+              ],
+              "variable": [
+                {
+                  "key": "account",
+                  "value": "9"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "clôturer compte",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{url}}/admin/accounts/:account/close",
+              "host": [
+                "{{url}}"
+              ],
+              "path": [
+                "admin",
+                "accounts",
+                ":account",
+                "close"
+              ],
+              "variable": [
+                {
+                  "key": "account",
+                  "value": "9"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Transfer",
+      "item": []
+    },
+    {
+      "name": "Transaction",
+      "item": []
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ]
+}
