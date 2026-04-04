@@ -30,6 +30,7 @@ class User extends Authenticatable implements JWTSubject
         'password',
         'is_admin',
         'date_of_birth',
+        'google_id'
     ];
 
     /**
@@ -47,7 +48,7 @@ class User extends Authenticatable implements JWTSubject
      *
      * @var list<string>
      */
-    protected $appends = ['age'];
+    protected $appends = ['age', 'is_o_auth'];
 
     /**
      * Get the attributes that should be cast.
@@ -110,6 +111,13 @@ class User extends Authenticatable implements JWTSubject
     {
         return Attribute::make(
             get: fn() => Carbon::parse($this->date_of_birth)->age,
+        );
+    }
+
+    protected function isOauth(): Attribute
+    {
+        return Attribute::make(
+            get: fn() => $this->google_id != null,
         );
     }
 

@@ -21,6 +21,7 @@ class UserResource extends JsonResource
             'email' => $this->email,
             'date_of_birth' => $this->date_of_birth ? $this->date_of_birth->format('Y-m-d') : null,
             'age' => $this->age,
+            'is_o_auth' => $this->is_o_auth,
             'created_at' => $this->created_at->toDateTimeString(),
             'updated_at' => $this->updated_at->toDateTimeString(),
         ];

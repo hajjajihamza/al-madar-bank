@@ -6,8 +6,11 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\Auth\LoginRequest;
 use App\Http\Requests\Api\Auth\RegisterRequest;
 use App\Http\Resources\UserResource;
+use App\Models\User;
 use App\Services\AuthService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Hash;
+use Laravel\Socialite\Facades\Socialite;
 
 class AuthController extends Controller
 {
@@ -37,10 +40,22 @@ class AuthController extends Controller
     public function login(LoginRequest $request): JsonResponse
     {
         if (!$token = $this->authService->login($request->validated())) {
-            return response()->json(['error' => 'Unauthorized'], 401);
+            return response()->json(['error' => 'Invalid credentials'], 401);
         }
 
         return $this->respondWithToken($token, 'Successfully logged in');
+    }
+
+
+    public function redirectToGoogle()
+    {
+        return Socialite::driver('google')->stateless()->redirect();
+    }
+
+    public function handleGoogleCallback()
+    {
+        $token = $this->authService->authGoogle();
+        return redirect('http://localhost:5173/login?token='. $token);
     }
 
     /**

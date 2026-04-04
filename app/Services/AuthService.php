@@ -5,6 +5,8 @@ namespace App\Services;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
+use Laravel\Socialite\Facades\Socialite;
+use Tymon\JWTAuth\Facades\JWTAuth;
 
 class AuthService
 {
@@ -38,6 +40,34 @@ class AuthService
         }
 
         return $token;
+    }
+
+    /**
+     * Authenticate user with Google and return token.
+     *
+     * @return string
+     */
+    public function authGoogle(): string
+    {
+        $googleUser = Socialite::driver('google')->stateless()->user();
+
+        // Check if user exists
+        $user = User::where('email', $googleUser->getEmail())->first();
+
+        if (!$user) {
+            // Create new user
+            [$firstName, $lastName] = explode(' ', $googleUser->getName(),2);
+            $user = User::create([
+                'first_name' => $firstName,
+                'last_name' => $lastName,
+                'email' => $googleUser->getEmail(),
+                'google_id' => $googleUser->getId(),
+                'password' => Hash::make(uniqid('', true)), // random password
+                'date_of_birth' => date('Y-m-d'),
+            ]);
+        }
+
+        return JWTAuth::fromUser($user);
     }
 
     /**

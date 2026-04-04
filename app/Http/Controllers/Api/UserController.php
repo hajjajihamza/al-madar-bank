@@ -21,9 +21,9 @@ class UserController extends Controller
     /**
      * Get the authenticated user's profile.
      */
-    public function me(): UserResource
+    public function me(): JsonResponse
     {
-        return new UserResource($this->authService->me());
+        return response()->json($this->authService->me()->toResource());
     }
 
     /**
